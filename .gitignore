@@ -1,0 +1,23 @@
+# ignore package
+build/
+obj/
+package/
+examples/bin/
+examples/obj/
+
+# ignore backup file
+*~
+*.swp
+
+# ignore script
+*.sh
+*.py
+*.so*
+*.o
+
+# ignore exe
+*.exe
+*.txt
+*.dat
+*.nvvp
+*.nvprof

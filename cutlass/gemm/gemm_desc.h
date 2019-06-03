@@ -107,6 +107,9 @@ template <
   /// The beta scaling values.
   SType beta;
 
+  /// The factor for the leaky-relu.
+  SType lReluFactor;
+
   /// The source matrix C.
   TensorRefC C;
 
@@ -125,7 +128,7 @@ template <
 
   /// Default ctor
   CUTLASS_HOST_DEVICE
-  GemmDesc(): problem_size(0, 0, 0, 1), alpha(1), beta(0) {}
+  GemmDesc(): problem_size(0, 0, 0, 1), alpha(1), beta(0), lReluFactor(0) {}
 
   /// Constructor for basic GEMM with batch count = 1
   CUTLASS_HOST_DEVICE
@@ -144,6 +147,31 @@ template <
     B(_B),
     batch_stride_B(0),
     beta(_beta),
+    lReluFactor(0),
+    C(_C),
+    batch_stride_C(0),
+    D(_D),
+    batch_stride_D(0) {}
+
+  /// Constructor for basic GEMM with the leaky-relu as epilogue 
+  CUTLASS_HOST_DEVICE
+  GemmDesc(GemmCoord _problem_size,
+           SType _alpha,
+           TensorRefA const &_A,
+           TensorRefB const &_B,
+           SType _beta,
+           TensorRefC const &_C,
+           TensorRefD const &_D,
+           SType _lReluFactor
+  ):
+    problem_size(_problem_size.k(), _problem_size.n(), _problem_size.m(), 1),
+    alpha(_alpha),
+    A(_A),
+    batch_stride_A(0),
+    B(_B),
+    batch_stride_B(0),
+    beta(_beta),
+    lReluFactor(_lReluFactor),
     C(_C),
     batch_stride_C(0),
     D(_D),
@@ -166,6 +194,7 @@ template <
     B(_B),
     batch_stride_B(0),
     beta(_beta),
+    lReluFactor(0),
     C(_C),
     batch_stride_C(0),
     D(_D),
@@ -195,6 +224,7 @@ template <
     B(_B),
     batch_stride_B(_batch_stride_B),
     beta(_beta),
+    lReluFactor(0),
     C(_C),
     batch_stride_C(_batch_stride_C),
     D(_D),

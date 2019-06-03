@@ -506,6 +506,36 @@ struct GemmTraits {
       return this->initialize(desc);
     }
 
+    // by chandler at 05312019
+    /// Helper to construct a GEMM params with an extra parameter as the factor of leaky-relu
+    CUTLASS_HOST_DEVICE int initialize(Index m,
+                                       Index n,
+                                       Index k,
+                                       typename Epilogue::Scalar alpha,
+                                       ScalarA const* d_a,
+                                       Index lda,
+                                       ScalarB const* d_b,
+                                       Index ldb,
+                                       typename Epilogue::Scalar beta,
+                                       typename Epilogue::Scalar lReluFactor,
+                                       ScalarC const* d_c,
+                                       Index ldc,
+                                       ScalarD* d_d,
+                                       Index ldd) {
+      GemmDesc<ScalarA, ScalarB, ScalarC, ScalarD, typename Epilogue::Scalar> desc(
+        GemmCoord(k, n, m, 1),
+        alpha,
+        TensorRef<ScalarA const, 2>(d_a, lda),
+        TensorRef<ScalarB const, 2>(d_b, ldb),
+        beta,
+        TensorRef<ScalarC const, 2>(d_c, ldc),
+        TensorRef<ScalarD, 2>(d_d, ldd),
+        lReluFactor
+      );
+
+      return this->initialize(desc);
+    }
+
     /// Helper to construct a batched GEMM params
     CUTLASS_HOST_DEVICE int initialize(Index m,
                                        Index n,
