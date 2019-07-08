@@ -247,7 +247,7 @@ CUTLASS_HOST_DEVICE void extract_index_from_iterator(
         extract_index_from_iterator(global_store_iterator, global_base_ptr,
                                     index);
 
-        functor.evaluate(shared_load_stream.fragment(), fragment_d, index, fragment_bias)
+        functor.evaluate(shared_load_stream.fragment(), fragment_d, index, fragment_bias);
 
         // Transform D fragment.
         typename GlobalTransformerD::OutputFragment global_transformed_d;

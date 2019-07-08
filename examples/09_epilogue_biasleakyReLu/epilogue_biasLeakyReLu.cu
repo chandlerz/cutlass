@@ -97,7 +97,8 @@ cudaError_t CutlassSgemmNN(
 
   typedef cutlass::gemm::SgemmConfig<
     cutlass::Shape<8, 128, 128>,           // threadblock tile size
-	cutlass::Shape<8, 8, 8>				   // Tile size for thread-level GEMM (K-by-N-by-M)
+	cutlass::Shape<8, 8, 8>,			   // Tile size for thread-level GEMM (K-by-N-by-M)
+	1, 1, false
   > GemmConfig;
 
   typedef cutlass::gemm::BiasLeakyReluEpilogueFunctor<
@@ -115,11 +116,11 @@ cudaError_t CutlassSgemmNN(
 
   typedef typename EpilogueFunctor::Params EpiParams;
 
-  typedef cutlass::gemm::SgemmTraits<
+  typedef cutlass::gemm::SimplifiedGemmTraits <
     cutlass::MatrixLayout::kColumnMajor,   // layout of A matrix
     cutlass::MatrixLayout::kColumnMajor,   // layout of B matrix
-    cutlass::Shape<8, 128, 128>,           // threadblock tile size
-	GemmEpilogue
+	GemmConfig,
+	GemmEpilogue	
     > GemmTraits;
 
   // Define a CUTLASS GEMM type from a GemmTraits<> instantiation.

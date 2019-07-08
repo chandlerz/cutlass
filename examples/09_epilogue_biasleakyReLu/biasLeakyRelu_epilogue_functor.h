@@ -8,9 +8,11 @@
 #include <cutlass/gemm/gemm_traits.h>
 #include <cutlass/shape.h>
 #include <cutlass/fragment_multiply_add.h>
+#include <cutlass/gemm/linear_scaling.h>
 
 namespace cutlass {
 namespace gemm {
+
 template <typename Scalar_, typename GemmConfig_, typename FragmentMultiplyAdd_ = FragmentMultiplyAdd<Scalar_, Scalar_> >
 struct BiasLeakyReluEpilogueFunctor 
 {
@@ -106,11 +108,11 @@ struct BiasLeakyReluEpilogueFunctor
   /// Method to determine whether the source accumulator matrix C is ever needed. This method
   /// may always safely return true, though better performance is possible if the source accumulator
   /// matrix is never loaded unnecessarily.
-  /*
+  
   CUTLASS_DEVICE
   bool source_required() const {
-    return true;
-  }*/
+    return !cutlass::gemm::is_zero(beta_);
+  }
 
   // Evaluate the functor
   template <typename FragmentA_, typename FragmentB_, typename FragmentRow_>
