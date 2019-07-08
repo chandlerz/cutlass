@@ -279,8 +279,8 @@ __global__ void ReferenceGemm_kernel(
 	
     // add Relu
     float temp = alpha * accumulator + beta * C[i + j * ldc];
-	// temp += pBias[j];
-	temp += 0;
+	//temp += pBias[j];
+	temp += 1.0f;
 
     C[i + j * ldc] = temp > .0f ? temp : temp*lReluFactor;
   }

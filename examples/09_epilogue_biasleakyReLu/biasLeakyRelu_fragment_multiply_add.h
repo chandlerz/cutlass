@@ -46,6 +46,7 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
 							   const int index[FragmentCd_::kElements],
 							   FragmentRow_ const &row) {
     int const kReduction = FragmentB_::kElements / FragmentCd_::kElements;
+    int const width = FragmentCd_::kElements / FragmentRow_::kElements;
     for (int j = 0; j < FragmentCd_::kElements; ++j) {
       d[j] = b[j * kReduction + 0];
       for (int k = 1; k < kReduction; ++k) {
@@ -55,7 +56,8 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
    
    	  if (index[j] != -1) {
 	  	/// czhou-question: why divide not the module? 
-	  	d[j] += row[j/width];
+	  	//d[j] += row[j/width];
+	  	d[j] += 1.0f;
 	  }
     }
   }

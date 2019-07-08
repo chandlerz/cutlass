@@ -118,7 +118,7 @@ struct BiasLeakyReluEpilogueFunctor
   template <typename FragmentA_, typename FragmentB_, typename FragmentRow_>
   CUTLASS_DEVICE void evaluate(FragmentA_ const& accum, 
   							   FragmentB_& output, 
-							   const int [FragmentB_::kElements],
+							   const int index[FragmentB_::kElements],
 							   FragmentRow_ const &row)
   {
     FragmentMultiplyAdd mad;
