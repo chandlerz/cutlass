@@ -10,6 +10,10 @@ CUCC := $(CUDA_PATH)/bin/nvcc
 CFLAGS  := -m64 -std=c++11 
 CUFLAGS := -m64 -std=c++11 
 
+# if debug
+CFLAGS += -DDEBUG_Z
+CUFLAGS += -DDEBUG_Z
+
 # CFLAGS  += -g -lineinfo
 # CUFLAGS += -g -G
 

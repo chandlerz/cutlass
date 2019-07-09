@@ -46,6 +46,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <string>
 #include <cassert>
 #include <cstdio>
 #include <cublas_v2.h>
@@ -196,6 +197,60 @@ __global__ void InitializeMatrix_kernel(
   }
 }
 
+__global__ void setMatrix2Value_kernel(
+  float *matrix,
+  int ldm,
+  int rows,
+  int columns,
+  float val) {
+
+  int i = threadIdx.x + blockIdx.x * blockDim.x;
+  int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+  if (i < rows && j < columns) {
+    int offset = i + j * ldm;
+
+    matrix[offset] = val;
+  }
+}
+
+/// Simple function to reset a matrix to a value.
+cudaError_t setMatrix2Value(float *matrix, int ldm, int rows, int columns, float val=.0f) {
+
+  dim3 block(16, 16);
+  dim3 grid(
+    (rows + block.x - 1) / block.x,
+    (columns + block.y - 1) / block.y
+  );
+
+  setMatrix2Value_kernel<<< grid, block >>>(matrix, ldm, rows, columns, val);
+
+  return cudaGetLastError();
+}
+
+__global__ void setBias2IndexID_kernel(
+  float *pBias,
+  int len) {
+
+  int i = threadIdx.x + blockIdx.x * blockDim.x;
+
+  if (i < len) {
+  	pBias[i] = i;
+  }
+}
+
+/// Simple function to set a vector to its index.
+cudaError_t setBias2IndexID(float *pBias, int len) {
+
+  dim3 block(256);
+  dim3 grid((len + block.x - 1) / block.x);
+
+  setBias2IndexID_kernel<<< grid, block >>>(pBias, len);
+
+  return cudaGetLastError();
+}
+
+
 /// Simple function to initialize a matrix to arbitrary small integers.
 cudaError_t InitializeMatrix(float *matrix, int ldm, int rows, int columns, int seed = 0) {
 
@@ -279,8 +334,8 @@ __global__ void ReferenceGemm_kernel(
 	
     // add Relu
     float temp = alpha * accumulator + beta * C[i + j * ldc];
-	//temp += pBias[j];
-	temp += 1.0f;
+	temp += pBias[j];
+	//temp += 1.0f;
 
     C[i + j * ldc] = temp > .0f ? temp : temp*lReluFactor;
   }
@@ -331,6 +386,33 @@ cudaError_t ReferenceGemm(
       ReferenceGemm_kernel<<< grid, block >>>(M, N, K, alpha, A, lda, B, ldb, beta, C, ldc, lReluFactor, pBias);
 
   return cudaGetLastError();
+}
+
+// Input matrix is column-major
+void saveMatrix(float *matrix, int ld, int rows, int cols, std::string filename)
+{
+	FILE *output = NULL;
+
+	if ((output = fopen(filename.c_str(), "w")) == NULL)
+	{
+		printf("Can not open file : %s\n", filename.c_str());
+		exit(1);
+	}
+
+	printf("rows = %d, cols = %d \n", rows, cols);
+
+	for (int rowID=0; rowID < rows; rowID++)
+	{
+		for (int colID=0; colID < cols; colID++)
+		{
+			float val = matrix[rowID + colID*ld];
+
+			fprintf(output, "%3d\t", (int)val);
+		}
+		fprintf(output, "\n");
+	}
+
+	fclose(output);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -438,6 +520,12 @@ cudaError_t TestCutlassGemmNN(int M, int N, int K, float alpha, float beta, floa
   std::vector<float> host_cutlass(ldc * N, 0);
   std::vector<float> host_reference(ldc * N, 0);
 
+#ifdef DEBUG_Z
+  // reset A and B to zero
+  setMatrix2Value(A, lda, M, K, .0f);
+  setMatrix2Value(B, ldb, K, N, .0f);
+  setBias2IndexID(pBias, N);
+#endif
 
 
 //=================== test the NN case ======================
@@ -450,6 +538,11 @@ cudaError_t TestCutlassGemmNN(int M, int N, int K, float alpha, float beta, floa
 
   result = cudaMemcpy(host_cutlass.data(), C_cutlass, sizeof_C, cudaMemcpyDeviceToHost);
   result = cudaMemcpy(host_reference.data(), C_reference, sizeof_C, cudaMemcpyDeviceToHost);
+
+#ifdef DEBUG_Z
+  saveMatrix(  host_cutlass.data(), lda, M, N, "cutlass.dat");
+  saveMatrix(host_reference.data(), lda, M, N, "reference.dat");
+#endif
 
   if (host_cutlass != host_reference) {
     std::cerr << "CUTLASS results incorrect." << std::endl;
@@ -511,6 +604,8 @@ int main(int argc, const char *arg[]) {
   //
   // Run the CUTLASS GEMM test.
   //
+
+  printf("m = %d, n = %d, k = %d\n", problem[0], problem[1], problem[2]);
 
   cudaError_t result = TestCutlassGemmNN(
     problem[0],     // GEMM M dimension

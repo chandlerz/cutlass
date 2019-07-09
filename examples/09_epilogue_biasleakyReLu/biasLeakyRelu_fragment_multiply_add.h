@@ -47,6 +47,15 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
 							   FragmentRow_ const &row) {
     int const kReduction = FragmentB_::kElements / FragmentCd_::kElements;
     int const width = FragmentCd_::kElements / FragmentRow_::kElements;
+#ifdef DEBUG_Z
+	if (threadIdx.x == 0)
+	{
+		printf("width = %d for threadIdx.x = %d\n", width, threadIdx.x);
+		printf("FB_kElements = %d for threadIdx.x = %d\n",   FragmentB_::kElements, threadIdx.x);
+		printf("FC_kElements = %d for threadIdx.x = %d\n",  FragmentCd_::kElements, threadIdx.x);
+		printf("FR_kElements = %d for threadIdx.x = %d\n", FragmentRow_::kElements, threadIdx.x);
+	}
+#endif
     for (int j = 0; j < FragmentCd_::kElements; ++j) {
       d[j] = b[j * kReduction + 0];
       for (int k = 1; k < kReduction; ++k) {
@@ -55,9 +64,9 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
       d[j] = a * ScalarAlphaBeta(d[j]);
    
    	  if (index[j] != -1) {
-	  	/// czhou-question: why divide not the module? 
-	  	//d[j] += row[j/width];
-	  	d[j] += 1.0f;
+	  	/// czhou-question: why divide not module? 
+	  	d[j] += row[j];
+	  	//d[j] += 1.0f;
 	  }
     }
   }
