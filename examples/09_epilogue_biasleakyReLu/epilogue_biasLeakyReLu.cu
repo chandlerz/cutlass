@@ -158,7 +158,7 @@ cudaError_t CutlassSgemmNN(
   }
 
   // Launch the CUTLASS GEMM kernel.
-  for (int i=0; i<500; i++)
+  for (int i=0; i<iters; i++)
     Gemm::launch(params, stream);
 
   cudaStreamDestroy(stream);
@@ -335,7 +335,6 @@ __global__ void ReferenceGemm_kernel(
     // add Relu
     float temp = alpha * accumulator + beta * C[i + j * ldc];
 	temp += pBias[j];
-	//temp += 1.0f;
 
     C[i + j * ldc] = temp > .0f ? temp : temp*lReluFactor;
   }

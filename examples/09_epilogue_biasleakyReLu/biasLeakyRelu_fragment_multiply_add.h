@@ -48,12 +48,13 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
     int const kReduction = FragmentB_::kElements / FragmentCd_::kElements;
     int const width = FragmentCd_::kElements / FragmentRow_::kElements;
 #ifdef DEBUG_Z
-	if (threadIdx.x == 0)
+	if (threadIdx.x == 32)
 	{
-		printf("width = %d for threadIdx.x = %d\n", width, threadIdx.x);
-		printf("FB_kElements = %d for threadIdx.x = %d\n",   FragmentB_::kElements, threadIdx.x);
-		printf("FC_kElements = %d for threadIdx.x = %d\n",  FragmentCd_::kElements, threadIdx.x);
-		printf("FR_kElements = %d for threadIdx.x = %d\n", FragmentRow_::kElements, threadIdx.x);
+		printf("threadIdx.x = %d, threadIdx.y = %d\n", threadIdx.x, threadIdx.y);
+		printf("row.x = %f,row.y = %f,row.w = %f,row.z = %f,\n", row[0], row[1], row[2], row[3]);
+		//printf("FB_kElements = %d for threadIdx.x = %d\n",   FragmentB_::kElements, threadIdx.x);
+		//printf("FC_kElements = %d for threadIdx.x = %d\n",  FragmentCd_::kElements, threadIdx.x);
+		//printf("FR_kElements = %d for threadIdx.x = %d\n", FragmentRow_::kElements, threadIdx.x);
 	}
 #endif
     for (int j = 0; j < FragmentCd_::kElements; ++j) {
@@ -65,8 +66,7 @@ struct FusedBiasLeakyReluFragmentMultiplyAdd {
    
    	  if (index[j] != -1) {
 	  	/// czhou-question: why divide not module? 
-	  	d[j] += row[j];
-	  	//d[j] += 1.0f;
+	  	d[j] += row[j/width];
 	  }
     }
   }

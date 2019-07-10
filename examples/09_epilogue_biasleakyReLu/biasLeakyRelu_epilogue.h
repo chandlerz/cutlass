@@ -151,6 +151,15 @@ CUTLASS_HOST_DEVICE void extract_index_from_iterator(
     // Preserve the base pointer of the output D matrix
     typename GlobalStoreIteratorD::Pointer global_base_ptr =
       this->params.iterator_d.pointer;
+/*
+#ifdef DEBUG_Z
+	if (threadIdx.x == 0)
+	{
+		printf("threadIdx.x = %d, threadIdx.y = %d\n", threadIdx.x, threadIdx.y);
+		printf("Iterations::kH = %d,  Iterations::kW= %d\n", Iterations::kH, Iterations::kW);
+	}
+#endif
+*/
 
     CUTLASS_PRAGMA_UNROLL
     for (int h = 0; h < Iterations::kH; ++h) {

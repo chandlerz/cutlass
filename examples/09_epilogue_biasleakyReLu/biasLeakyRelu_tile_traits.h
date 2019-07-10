@@ -44,7 +44,7 @@ struct GemmGlobalTileBiasTraits : public GemmGlobalTileTraits<GemmOperand::kB,
                                                             kAccessSize_> {
 
   /// The base class.
-  typedef GemmGlobalTileTraits<GemmOperand::kC,
+  typedef GemmGlobalTileTraits<GemmOperand::kB,
                                MatrixLayout::kColumnMajor,
                                Scalar_,
                                Tile_,

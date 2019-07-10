@@ -11,8 +11,11 @@ CFLAGS  := -m64 -std=c++11
 CUFLAGS := -m64 -std=c++11 
 
 # if debug
-CFLAGS += -DDEBUG_Z
-CUFLAGS += -DDEBUG_Z
+# CFLAGS += -DDEBUG_Z
+# CUFLAGS += -DDEBUG_Z
+
+CFLAGS += -DAALike
+CUFLAGS += -DAALike
 
 # CFLAGS  += -g -lineinfo
 # CUFLAGS += -g -G
